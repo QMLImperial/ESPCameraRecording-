@@ -14,11 +14,7 @@ void setupLedFlash();
 // External LED control implemented in app_httpd.cpp (only available when LED_GPIO_NUM defined)
 #if defined(LED_GPIO_NUM)
 extern void enable_led(bool en);
-#endif
-
-void startRecording(int hours);
-void stopRecording();
-static void recordVideoTask(void *arg);
+ extern int led_duty;  // brightness value manipulated during recording
 
 // Global recording state
 volatile bool isRecording = false;
@@ -157,8 +153,9 @@ static void recordVideoTask(void *arg) {
 
   Serial.printf("Recording: %s\n", filename);
   isRecording = true;
-  // Turn LED on while recording (if supported)
+  // Turn LED on at full brightness while recording (for illumination)
 #if defined(LED_GPIO_NUM)
+  led_duty = CONFIG_LED_MAX_INTENSITY;
   enable_led(true);
 #endif
 
@@ -207,6 +204,11 @@ static void recordVideoTask(void *arg) {
     // Flush to ensure the frame is committed to SD card
     file.flush();
 
+    // keep LED on constant for illumination (duty already set on start)
+#if defined(LED_GPIO_NUM)
+    enable_led(true);
+#endif
+
     delay(200);  // ~5 FPS
   }
 
@@ -252,5 +254,10 @@ void stopRecording() {
   if (isRecording) {
     isRecording = false;
     Serial.println("Stopping recording...");
+#if defined(LED_GPIO_NUM)
+    // turn off LED immediately and reset brightness
+    enable_led(false);
+    led_duty = 0;
+#endif
   }
 }
