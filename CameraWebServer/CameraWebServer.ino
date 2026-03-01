@@ -6,6 +6,11 @@
 
 #include "board_config.h"
 
+// LED configuration
+#if defined(LED_GPIO_NUM)
+#define CONFIG_LED_MAX_INTENSITY 255
+#endif
+
 const char *ssid = "ZTE_2.4G_3Nf74C";
 const char *password = "D5MQKdyX";
 
@@ -15,6 +20,7 @@ void setupLedFlash();
 #if defined(LED_GPIO_NUM)
 extern void enable_led(bool en);
  extern int led_duty;  // brightness value manipulated during recording
+#endif
 
 // Global recording state
 volatile bool isRecording = false;
